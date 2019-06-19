@@ -27,7 +27,7 @@ For ($Counter = 0; $Counter -lt 10; $counter++){
     $ScriptBlock = {
         $Process = Start-Process $Env:comspec -PassThru 
         Write-output -InputObject 'Runspaces!'
-        Start-sleep -Seconds 20
+        Start-sleep -Seconds 5
         stop-process -InputObject $process
     }
     $Null = $PowerShell.AddScript($ScriptBlock)
