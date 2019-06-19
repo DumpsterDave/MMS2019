@@ -15,7 +15,7 @@
 
 
 #region Sequential (No optimization)
-#Wait for 5 seconds 30 times
+#Wait for 1 seconds 30 times
 Clear-Host
 Write-Host "This Process ID is $($pid)" -ForegroundColor White -BackgroundColor Black
 $SequentialTime = Measure-Command {
@@ -31,7 +31,7 @@ $JobTime = Measure-Command {
     $ActiveJobs = New-Object System.Collections.ArrayList
     $AllJobs = New-Object System.Collections.ArrayList
 
-    for ($i = 0; $i -lt 10; $i++) {
+    for ($i = 0; $i -lt 5; $i++) {
         $Job = Start-Job -Name "Job_$($i)" -ArgumentList @($i) -ScriptBlock {
             Start-Sleep -Seconds 1
             Write-Host "Processing of Job_$($args[0]) with pid $($pid) completed." -ForegroundColor Cyan #Note: Since this is a job, this output will not be visible until we run Receive-Job
@@ -45,7 +45,7 @@ $JobTime = Measure-Command {
     }
     $ActiveJobs.Clear()
 
-    for ($i = 10; $i -lt 20; $i++) {
+    for ($i = 5; $i -lt 10; $i++) {
         $Job = Start-Job -Name "Job_$($i)" -ArgumentList @($i) -ScriptBlock {
             Start-Sleep -Seconds 1
             Write-Host "Processing of Job_$($args[0]) with pid $($pid) completed." -ForegroundColor Cyan
@@ -59,10 +59,52 @@ $JobTime = Measure-Command {
     }
     $ActiveJobs.Clear()
 
-    for ($i = 20; $i -lt 30; $i++) {
+    for ($i = 10; $i -lt 15; $i++) {
+        $Job = Start-Job -Name "Job_$($i)" -ArgumentList @($i) -ScriptBlock {
+            Start-Sleep -Seconds 1
+            Write-Host "Processing of Job_$($args[0]) with pid $($pid) completed." -ForegroundColor Cyan #Note: Since this is a job, this output will not be visible until we run Receive-Job
+        }
+        $ActiveJobs.Add($Job)
+        $AllJobs.Add($Job)
+    }
+    foreach ($job in $ActiveJobs) {
+        Wait-Job $job
+        Receive-Job $job
+    }
+    $ActiveJobs.Clear()
+
+    for ($i = 15; $i -lt 20; $i++) {
         $Job = Start-Job -Name "Job_$($i)" -ArgumentList @($i) -ScriptBlock {
             Start-Sleep -Seconds 1
             Write-Host "Processing of Job_$($args[0]) with pid $($pid) completed." -ForegroundColor Cyan
+        }
+        $ActiveJobs.Add($Job)
+        $AllJobs.Add($Job)
+    }
+    foreach ($job in $ActiveJobs) {
+        Wait-Job $job
+        Receive-Job $job
+    }
+    $ActiveJobs.Clear()
+
+    for ($i = 20; $i -lt 25; $i++) {
+        $Job = Start-Job -Name "Job_$($i)" -ArgumentList @($i) -ScriptBlock {
+            Start-Sleep -Seconds 1
+            Write-Host "Processing of Job_$($args[0]) with pid $($pid) completed." -ForegroundColor Cyan #Note: Since this is a job, this output will not be visible until we run Receive-Job
+        }
+        $ActiveJobs.Add($Job)
+        $AllJobs.Add($Job)
+    }
+    foreach ($job in $ActiveJobs) {
+        Wait-Job $job
+        Receive-Job $job
+    }
+    $ActiveJobs.Clear()
+
+    for ($i = 25; $i -lt 30; $i++) {
+        $Job = Start-Job -Name "Job_$($i)" -ArgumentList @($i) -ScriptBlock {
+            Start-Sleep -Seconds 1
+            Write-Host "Processing of Job_$($args[0]) with pid $($pid) completed." -ForegroundColor Cyan #Note: Since this is a job, this output will not be visible until we run Receive-Job
         }
         $ActiveJobs.Add($Job)
         $AllJobs.Add($Job)
@@ -82,10 +124,10 @@ $WorkflowTime = Measure-Command {
     Workflow Test-Workflow{
 
         $ints = 0..29
-        ForEach -Parallel -ThrottleLimit 10 ($i in $ints) {  #This is a thread
+        ForEach -Parallel -ThrottleLimit 5 ($i in $ints) {  #This is a thread
             InlineScript {  #This is a process
                 Start-Sleep -Seconds 1
-                Write-Host "Workflow_$($using:i) with Process ID $($pid) has completed." -ForegroundColor Yellow  #Will not show color because the workflow is only returning the text to the 
+                Write-Host "Workflow_$($using:i) with Process ID $($pid) has completed." -ForegroundColor Blue  #Will not show color because the workflow is only returning the text to the 
             }
         }
     }
@@ -98,10 +140,7 @@ $host.ui.RawUI.ForegroundColor = 15 #White
 #region Runspace
 $RunspaceTime = Measure-Command {
     #region Runspace Pool
-    [runspacefactory]::CreateRunspacePool()
-    $RunspacePool = [runspacefactory]::CreateRunspacePool(1, 10)
-    $PowerShell = [powershell]::Create()
-    $PowerShell.RunspacePool = $RunspacePool
+    $RunspacePool = [runspacefactory]::CreateRunspacePool(1, 5)
     $RunspacePool.Open()
     #endregion
 

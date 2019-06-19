@@ -11,7 +11,7 @@
     
     .LINK
 #>
-
+Clear-Host
 $Spaces = [System.Collections.ArrayList]::new()
 
 #Shared Memory Example Variables
@@ -20,7 +20,6 @@ $AHashTable = [hashtable]::new(@{0=0;1=1;2=2;3=3;4=4;})
 $Array = @(0,1,2,3,4)
 
 [runspacefactory]::CreateRunspacePool()
-#$SessionState = [System.Management.Automation.Runspaces.InitialSessionState]::CreateDefault()
 $RunspacePool = [runspacefactory]::CreateRunspacePool(1, 5)
 [void]$RunspacePool.Open()
 
@@ -58,6 +57,7 @@ function Show-Variables {
 
 #region Runspaces
 Show-Variables -Before
+$null = Read-Host "Press Enter to Contine..."
 
 for ($i = 0; $i -lt 5; $i++) {
     $Runspace = [runspacefactory]::CreateRunspace()
@@ -98,7 +98,7 @@ for ($i = 0; $i -lt 5; $i++) {
     [void]$PowerShell.AddParameters($Parameters)
 
     $Handle = $PowerShell.BeginInvoke()
-    $temp = '' | Select PowerShell,Handle
+    $temp = '' | Select-Object PowerShell,Handle
     $temp.PowerShell = $PowerShell
     $temp.handle = $Handle
     [void]$Spaces.Add($Temp)
@@ -115,6 +115,7 @@ $return = foreach ($rs in $Spaces) {
 }
 $Spaces.clear()
 
-($return | Group Thread).Count
+($return | Group-Object Thread).Count
 
+$null = Read-Host "Press Enter to Contine..."
 Show-Variables -After
